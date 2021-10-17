@@ -8,15 +8,22 @@ public class Blackboard : MonoBehaviour
     public List<Tile> tileList;
     public List<KnowledgeSource> factions;
     public int factionCount = 6;
+    public List<Tile> landTileList;
+    public static int totalTilesOwned; //Once this reaches 2304, it's gg
     // Start is called before the first frame update
     void Awake()
     {
         tileMatrix = new Tile[64, 36];
         tileList = new List<Tile>();
         factions = new List<KnowledgeSource>();
+        landTileList = new List<Tile>();
+        totalTilesOwned = 0;
         for(int c = 0; c < factionCount; c++)
         {
-            factions.Add(new KnowledgeSource());
+            KnowledgeSource k = new KnowledgeSource();
+            k.id = c;
+            k.Init(this);
+            factions.Add(k);
         }
         for (int c = 0; c < transform.childCount; c++)
         {
@@ -24,10 +31,13 @@ public class Blackboard : MonoBehaviour
             for (int d = 0; d < row.childCount; d++)
             {
                 Tile tile = row.GetChild(d).GetComponent<Tile>();
-                tile.x = d;
-                tile.y = c;
+                tile.pos = new Vector2Int(d, c);
                 tileMatrix[d, c] = tile;
                 tileList.Add(tile);
+                if (tile.land)
+                {
+                    landTileList.Add(tile);
+                }
             }
         }
         foreach (Tile t in tileList)
@@ -35,58 +45,46 @@ public class Blackboard : MonoBehaviour
             if (t.resource == Resource.None)
             {
                 float f = Random.value;
-                if (f < .01f)
+                if (f < .015f)
                 {
                     t.resource = Resource.Food;
                     MakeMoreResource(t, Resource.Food, .5f);
                 }
-                else if (f < .02f)
+                else if (f < .025f)
                 {
                     t.resource = Resource.Money;
                     MakeMoreResource(t, Resource.Money, .2f);
                 }
-                else if (f < .03f)
+                else if (f < .035f)
                 {
                     t.resource = Resource.Production;
                     MakeMoreResource(t, Resource.Production, .35f);
                 }
             }
         }
-        Dictionary<Vector2Int, bool> startDict = new Dictionary<Vector2Int, bool>();
-        for (int c = 0; c < factionCount; c++)
-        {
-            factions[c].id = c;
-
-        }
     }
     
     void MakeMoreResource(Tile tile, Resource resource, float chance)
     {
-        if (tile.x < 63 && tileMatrix[tile.x + 1, tile.y].resource == Resource.None && Random.value < chance)
+        if (tile.pos.x < 63 && tileMatrix[tile.pos.x + 1, tile.pos.y].resource == Resource.None && Random.value < chance)
         {
-            tileMatrix[tile.x + 1, tile.y].resource = resource;
-            MakeMoreResource(tileMatrix[tile.x + 1, tile.y], resource, chance * .25f);
+            tileMatrix[tile.pos.x + 1, tile.pos.y].resource = resource;
+            MakeMoreResource(tileMatrix[tile.pos.x + 1, tile.pos.y], resource, chance * .25f);
         }
-        if (tile.x > 0 && tileMatrix[tile.x - 1, tile.y].resource == Resource.None && Random.value < chance)
+        if (tile.pos.x > 0 && tileMatrix[tile.pos.x - 1, tile.pos.y].resource == Resource.None && Random.value < chance)
         {
-            tileMatrix[tile.x - 1, tile.y].resource = resource;
-            MakeMoreResource(tileMatrix[tile.x - 1, tile.y], resource, chance * .25f);
+            tileMatrix[tile.pos.x - 1, tile.pos.y].resource = resource;
+            MakeMoreResource(tileMatrix[tile.pos.x - 1, tile.pos.y], resource, chance * .25f);
         }
-        if (tile.y < 35 && tileMatrix[tile.x, tile.y + 1].resource == Resource.None && Random.value < chance)
+        if (tile.pos.y < 35 && tileMatrix[tile.pos.x, tile.pos.y + 1].resource == Resource.None && Random.value < chance)
         {
-            tileMatrix[tile.x, tile.y + 1].resource = resource;
-            MakeMoreResource(tileMatrix[tile.x, tile.y + 1], resource, chance * .25f);
+            tileMatrix[tile.pos.x, tile.pos.y + 1].resource = resource;
+            MakeMoreResource(tileMatrix[tile.pos.x, tile.pos.y + 1], resource, chance * .25f);
         }
-        if (tile.y > 0 && tileMatrix[tile.x, tile.y - 1].resource == Resource.None && Random.value < chance)
+        if (tile.pos.y > 0 && tileMatrix[tile.pos.x, tile.pos.y - 1].resource == Resource.None && Random.value < chance)
         {
-            tileMatrix[tile.x, tile.y - 1].resource = resource;
-            MakeMoreResource(tileMatrix[tile.x, tile.y - 1], resource, chance * .25f);
+            tileMatrix[tile.pos.x, tile.pos.y - 1].resource = resource;
+            MakeMoreResource(tileMatrix[tile.pos.x, tile.pos.y - 1], resource, chance * .25f);
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

@@ -15,8 +15,7 @@ public class Tile : MonoBehaviour
     public bool land; //If not land, then water
     public Resource resource; //Most will be none
     public int owner; //0 is no one
-    public int x;
-    public int y;
+    public Vector2Int pos;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,11 +39,5 @@ public class Tile : MonoBehaviour
         {
             GetComponent<MeshRenderer>().material.color = Color.blue;
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

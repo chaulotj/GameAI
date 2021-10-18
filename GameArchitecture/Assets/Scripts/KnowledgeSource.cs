@@ -2,12 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum WarType
-{
-    Warlike,
-    Peaceful
-}
-
 public enum MovementType
 {
     Land,
@@ -28,10 +22,18 @@ public class KnowledgeSource : MonoBehaviour
     private Blackboard bb;
     private Color color;
     public Resource[] resourcePriorities;
-    public WarType warType;
+    public float warChance; //between 0 and 1
     public MovementType preferredMovement;
-    public Dictionary<int, bool> factionsAtWar; //True=war, false = peace
+    public Dictionary<int, int> factionsAtWar; //owner, then warscore
     public List<Tile> priorityTiles;
+    public int tilesOwned;
+
+    public void IncrementResources()
+    {
+        food += foodPerTurn;
+        money += moneyPerTurn;
+        production += productionPerTurn;
+    }
 
     public void TakeTile(Tile tile)
     {
@@ -40,6 +42,7 @@ public class KnowledgeSource : MonoBehaviour
             Blackboard.totalTilesOwned++;
         }
         tile.owner = id;
+        tilesOwned++;
         ownedTiles.Add(tile, 1);
         switch (tile.resource)
         {
@@ -110,6 +113,7 @@ public class KnowledgeSource : MonoBehaviour
     public void LoseTile(Tile tile)
     {
         ownedTiles.Remove(tile);
+        tilesOwned--;
         switch (tile.resource)
         {
             case Resource.Food:
@@ -145,11 +149,6 @@ public class KnowledgeSource : MonoBehaviour
         }
     }
 
-    public void WarMove(int enemy, bool war)
-    {
-        factionsAtWar[enemy] = war; //If true, declare war. If false, it's peacetime
-    }
-
     public void ChoosePriorityTiles()
     {
         priorityTiles.Clear();
@@ -166,17 +165,23 @@ public class KnowledgeSource : MonoBehaviour
         List<Tile> preferred3 = new List<Tile>();
         List<Tile> betterMovement = new List<Tile>();
         List<Tile> otherMovement = new List<Tile>();
+        List<Tile> lastResort = new List<Tile>();
+        bool willingToDeclareWar = false;
+        if (Random.value < warChance)
+        {
+            willingToDeclareWar = true;
+        }
         foreach (KeyValuePair<Tile, int> tile in expandableTiles)
         {
-            if (factionsAtWar[tile.Key.owner])
+            if (factionsAtWar.ContainsKey(tile.Key.owner))
             {
                 AddPreferredResources(warAndPreferred1, warAndPreferred2, warAndPreferred3, tile.Key, war);
             }
-            else if(warType == WarType.Warlike)
+            else if(tile.Key.owner != 0 && willingToDeclareWar)
             {
                 AddPreferredResources(newConquestPreferred1, newConquestPreferred2, newConquestPreferred3, tile.Key, newConquest);
             }
-            else if(!AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
+            else if(tile.Key.owner == 0 && !AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
             {
                 if((preferredMovement == MovementType.Land && tile.Key.land) || (preferredMovement == MovementType.Sea && !tile.Key.land))
                 {
@@ -186,6 +191,10 @@ public class KnowledgeSource : MonoBehaviour
                 {
                     otherMovement.Add(tile.Key);
                 }
+            }
+            else
+            {
+                lastResort.Add(tile.Key);
             }
         }
         priorityTiles.AddRange(warAndPreferred1);
@@ -201,6 +210,7 @@ public class KnowledgeSource : MonoBehaviour
         priorityTiles.AddRange(preferred3);
         priorityTiles.AddRange(betterMovement);
         priorityTiles.AddRange(otherMovement);
+        priorityTiles.AddRange(lastResort);
     }
 
     private bool AddPreferredResources(List<Tile> list1, List<Tile> list2, List<Tile> list3, Tile tile, List<Tile> noneList = null)
@@ -231,20 +241,17 @@ public class KnowledgeSource : MonoBehaviour
     // Start is called before the first frame update
     public void Init(Blackboard bbIn)
     {
-        factionsAtWar = new Dictionary<int, bool>();
-        for(int c = 0; c < bb.factionCount; c++)
-        {
-            factionsAtWar.Add(c, false);
-        }
+        bb = bbIn;
+        tilesOwned = 0;
+        factionsAtWar = new Dictionary<int, int>();
         priorityTiles = new List<Tile>();
         ownedTiles = new Dictionary<Tile, int>();
         expandableTiles = new Dictionary<Tile, int>();
-        bb = bbIn;
-        food = 1;
+        food = 0;
         foodPerTurn = 1;
-        money = 1;
+        money = 0;
         moneyPerTurn = 1;
-        production = 1;
+        production = 0;
         productionPerTurn = 1;
         resourcePriorities = new Resource[3];
         int num1 = Random.Range(1, 4);
@@ -273,7 +280,7 @@ public class KnowledgeSource : MonoBehaviour
             default:
                 break;
         }
-        warType = (WarType)Random.Range(0, 2);
+        warChance = Random.value;
         preferredMovement = (MovementType)Random.Range(0, 2);
         switch (id)
         {

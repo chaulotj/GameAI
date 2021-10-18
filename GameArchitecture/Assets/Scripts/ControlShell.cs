@@ -5,6 +5,9 @@ using UnityEngine;
 public class ControlShell : MonoBehaviour
 {
     Blackboard bb;
+    public float secondsBetweenTurns;
+    public float timer;
+    public bool done;
     // Start is called before the first frame update
     void Start()
     {
@@ -21,11 +24,33 @@ public class ControlShell : MonoBehaviour
                 }
             }
         }
+        timer = 0f;
+        done = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!done)
+        {
+            timer += Time.deltaTime;
+            if (timer > secondsBetweenTurns)
+            {
+                timer -= secondsBetweenTurns;
+                foreach (KnowledgeSource k in bb.factions)
+                {
+                    k.IncrementResources();
+                    foreach (KeyValuePair<int, int> faction in k.factionsAtWar)
+                    {
+                        if(faction.Value < k.tilesOwned / 4.0f && k.money + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
+                        {
+                            bb.factions[faction.Key].factionsAtWar.Remove(k.id);
+                            k.factionsAtWar.Remove(faction.Key);
+                        }
+                    }
+                }
 
+            }
+        }
     }
 }

@@ -42,14 +42,76 @@ public class ControlShell : MonoBehaviour
                     k.IncrementResources();
                     foreach (KeyValuePair<int, int> faction in k.factionsAtWar)
                     {
-                        if(faction.Value < k.tilesOwned / 4.0f && k.money + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
+                        if(faction.Value < -k.tilesOwned / 4.0f && k.money + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
                         {
+                            k.money += faction.Value;
                             bb.factions[faction.Key].factionsAtWar.Remove(k.id);
                             k.factionsAtWar.Remove(faction.Key);
                         }
                     }
+                    k.ChoosePriorityTiles();
                 }
-
+                int totalDone = 0;
+                List<bool> done = new List<bool>() { false, false, false, false, false, false };
+                List<int> indexes = new List<int>() { 0, 0, 0, 0, 0, 0 };
+                while (totalDone < bb.factionCount)
+                {
+                    foreach (KnowledgeSource k in bb.factions)
+                    {
+                        if (!done[k.id])
+                        {
+                            while (true)
+                            {
+                                Tile tile = k.priorityTiles[indexes[k.id]];
+                                int moneyCost = 0;
+                                int productionCost = 0;
+                                int foodCost = 0;
+                                if (tile.owner != 0)
+                                {
+                                    productionCost += 2;
+                                    moneyCost += 2;
+                                }
+                                if (tile.land)
+                                {
+                                    foodCost += 2;
+                                }
+                                else
+                                {
+                                    foodCost++;
+                                    productionCost++;
+                                }
+                                if (tile.resource != Resource.None)
+                                {
+                                    productionCost++;
+                                }
+                                indexes[k.id]++;
+                                if (moneyCost < k.money && productionCost < k.production && foodCost < k.food)
+                                {
+                                    k.money -= moneyCost;
+                                    k.production -= productionCost;
+                                    k.food -= foodCost;
+                                    if (tile.owner != 0)
+                                    {
+                                        bb.factions[tile.owner].LoseTile(tile);
+                                    }
+                                    k.TakeTile(tile);
+                                    if (indexes[k.id] >= k.priorityTiles.Count)
+                                    {
+                                        done[k.id] = true;
+                                        totalDone++;
+                                    }
+                                    break;
+                                }
+                                else if (indexes[k.id] >= k.priorityTiles.Count)
+                                {
+                                    done[k.id] = true;
+                                    totalDone++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

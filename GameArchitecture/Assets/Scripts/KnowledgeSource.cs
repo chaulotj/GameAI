@@ -8,7 +8,7 @@ public enum MovementType
     Sea
 }
 
-public class KnowledgeSource : MonoBehaviour
+public class KnowledgeSource
 {
     public int id;
     public int food;
@@ -47,13 +47,13 @@ public class KnowledgeSource : MonoBehaviour
         switch (tile.resource)
         {
             case Resource.Food:
-                foodPerTurn++;
+                foodPerTurn += 2;
                 break;
             case Resource.Money:
-                moneyPerTurn++;
+                moneyPerTurn += 2;
                 break;
             case Resource.Production:
-                productionPerTurn++;
+                productionPerTurn += 2;
                 break;
             default:
                 break;
@@ -117,13 +117,13 @@ public class KnowledgeSource : MonoBehaviour
         switch (tile.resource)
         {
             case Resource.Food:
-                foodPerTurn--;
+                foodPerTurn -= 2;
                 break;
             case Resource.Money:
-                moneyPerTurn--;
+                moneyPerTurn -= 2;
                 break;
             case Resource.Production:
-                productionPerTurn--;
+                productionPerTurn -= 2;
                 break;
             default:
                 break;
@@ -211,6 +211,8 @@ public class KnowledgeSource : MonoBehaviour
         priorityTiles.AddRange(betterMovement);
         priorityTiles.AddRange(otherMovement);
         priorityTiles.AddRange(lastResort);
+        Debug.Log(priorityTiles.Count);
+        Debug.Log(expandableTiles.Count);
     }
 
     private bool AddPreferredResources(List<Tile> list1, List<Tile> list2, List<Tile> list3, Tile tile, List<Tile> noneList = null)
@@ -248,11 +250,11 @@ public class KnowledgeSource : MonoBehaviour
         ownedTiles = new Dictionary<Tile, int>();
         expandableTiles = new Dictionary<Tile, int>();
         food = 0;
-        foodPerTurn = 1;
+        foodPerTurn = 2;
         money = 0;
-        moneyPerTurn = 1;
+        moneyPerTurn = 2;
         production = 0;
-        productionPerTurn = 1;
+        productionPerTurn = 2;
         resourcePriorities = new Resource[3];
         int num1 = Random.Range(1, 4);
         int num2;

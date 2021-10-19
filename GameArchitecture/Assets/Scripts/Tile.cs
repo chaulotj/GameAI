@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Resource
+public enum Resource //It takes 2 food to move across land, and 1 food and 1 production to move on the sea. Attacking an enemy tile (beyond the normal costs) takes an extra 2 production and 2 money. Taking a resource costs 1 production
 {
     None,
     Food,

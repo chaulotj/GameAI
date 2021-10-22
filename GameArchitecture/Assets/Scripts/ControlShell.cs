@@ -7,12 +7,14 @@ public class ControlShell : MonoBehaviour
     Blackboard bb;
     private bool paused;
     private Transform canvas;
-    //public float secondsBetweenTurns;
-    //public float timer;
+    public static bool autorun;
+    public float secondsBetweenTurns;
+    public float timer;
     // Start is called before the first frame update
     void Start()
     {
         paused = false;
+        autorun = false;
         bb = GetComponent<Blackboard>();
         canvas = GameObject.Find("Canvas").transform;
         for (int c = 0; c < bb.factionCount; c++)
@@ -27,7 +29,7 @@ public class ControlShell : MonoBehaviour
                 }
             }
         }
-        //timer = 0f;
+        timer = 0f;
     }
 
     void Update()
@@ -46,13 +48,23 @@ public class ControlShell : MonoBehaviour
                 canvas.GetChild(1).gameObject.SetActive(false);
             }
         }
+        if (!paused)
+        {
+            if (autorun)
+            {
+                timer += Time.deltaTime;
+                if(timer > secondsBetweenTurns)
+                {
+                    timer -= secondsBetweenTurns;
+                    Run();
+                }
+            }
+        }
     }
 
     // Update is called once per frame
     public void Run()
     {
-            //timer += Time.deltaTime;
-            //timer -= secondsBetweenTurns;
             foreach (KnowledgeSource k in bb.factions)
             {
                 k.IncrementResources();
@@ -76,7 +88,6 @@ public class ControlShell : MonoBehaviour
         {
             maxLoops += k.priorityTiles.Count;
         }
-        Debug.Log(maxLoops);
         while (totalDone < bb.factionCount)
         {
             bigLoops++;

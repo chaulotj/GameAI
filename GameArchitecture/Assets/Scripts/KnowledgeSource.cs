@@ -20,6 +20,7 @@ public class KnowledgeSource
     public int productionPerTurn;
     public Dictionary<Tile, int> ownedTiles;
     public Dictionary<Tile, int> expandableTiles;
+    public Dictionary<Tile, bool> stillOwned;
     private Blackboard bb;
     private Color color;
     public Resource[] resourcePriorities;
@@ -63,7 +64,15 @@ public class KnowledgeSource
         tile.transform.GetChild(0).GetComponent<MeshRenderer>().material.color = color;
         if (expandableTiles.ContainsKey(tile))
         {
-            expandableTiles.Remove(tile);
+            expandableTiles[tile]--;
+            if(expandableTiles[tile] == 0)
+            {
+                expandableTiles.Remove(tile);
+            }
+        }
+        if (!stillOwned.ContainsKey(tile))
+        {
+            stillOwned.Add(tile, true);
         }
         if (tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
         {
@@ -114,6 +123,7 @@ public class KnowledgeSource
     public void LoseTile(Tile tile)
     {
         ownedTiles.Remove(tile);
+        stillOwned[tile] = false;
         tilesOwned--;
         switch (tile.resource)
         {
@@ -186,28 +196,31 @@ public class KnowledgeSource
         }
         foreach (KeyValuePair<Tile, int> tile in expandableTiles)
         {
-            if (factionsAtWar.ContainsKey(tile.Key.owner))
+            if (!stillOwned.ContainsKey(tile.Key) || !stillOwned[tile.Key])
             {
-                AddPreferredResources(warAndPreferred1, warAndPreferred2, warAndPreferred3, tile.Key, war);
-            }
-            else if(tile.Key.owner != -1 && willingToDeclareWar)
-            {
-                AddPreferredResources(newConquestPreferred1, newConquestPreferred2, newConquestPreferred3, tile.Key, newConquest);
-            }
-            else if(tile.Key.owner == -1 && !AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
-            {
-                if((preferredMovement == MovementType.Land && tile.Key.land) || (preferredMovement == MovementType.Sea && !tile.Key.land))
+                if (factionsAtWar.ContainsKey(tile.Key.owner))
                 {
-                    betterMovement.Add(tile.Key);
+                    AddPreferredResources(warAndPreferred1, warAndPreferred2, warAndPreferred3, tile.Key, war);
+                }
+                else if (tile.Key.owner != -1 && willingToDeclareWar)
+                {
+                    AddPreferredResources(newConquestPreferred1, newConquestPreferred2, newConquestPreferred3, tile.Key, newConquest);
+                }
+                else if (tile.Key.owner == -1 && !AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
+                {
+                    if ((preferredMovement == MovementType.Land && tile.Key.land) || (preferredMovement == MovementType.Sea && !tile.Key.land))
+                    {
+                        betterMovement.Add(tile.Key);
+                    }
+                    else
+                    {
+                        otherMovement.Add(tile.Key);
+                    }
                 }
                 else
                 {
-                    otherMovement.Add(tile.Key);
+                    lastResort.Add(tile.Key);
                 }
-            }
-            else
-            {
-                lastResort.Add(tile.Key);
             }
         }
         priorityTiles.AddRange(warAndPreferred1);
@@ -262,6 +275,7 @@ public class KnowledgeSource
         priorityTiles = new List<Tile>();
         ownedTiles = new Dictionary<Tile, int>();
         expandableTiles = new Dictionary<Tile, int>();
+        stillOwned = new Dictionary<Tile, bool>();
         food = 0;
         foodPerTurn = 2;
         money = 0;

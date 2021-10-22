@@ -13,6 +13,7 @@ public class Blackboard : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        //All my data structures
         tileMatrix = new Tile[64, 36];
         tileList = new List<Tile>();
         factions = new List<KnowledgeSource>();
@@ -20,6 +21,7 @@ public class Blackboard : MonoBehaviour
         totalTilesOwned = 0;
         for(int c = 0; c < factionCount; c++)
         {
+            //Inits all knowledge sources
             KnowledgeSource k = new KnowledgeSource();
             k.id = c;
             k.Init(this);
@@ -27,6 +29,7 @@ public class Blackboard : MonoBehaviour
         }
         for (int c = 0; c < transform.childCount; c++)
         {
+            //Fills all tile structures
             Transform row = transform.GetChild(c);
             for (int d = 0; d < row.childCount; d++)
             {
@@ -42,6 +45,7 @@ public class Blackboard : MonoBehaviour
         }
         foreach (Tile t in tileList)
         {
+            //Generates the world's tiles
             t.owner = -1;
             if (t.resource == Resource.None)
             {
@@ -56,7 +60,7 @@ public class Blackboard : MonoBehaviour
                     t.resource = Resource.Money;
                     MakeMoreResource(t, Resource.Money, .2f);
                 }
-                else if (f < .035f)
+                else if (f < .04f)
                 {
                     t.resource = Resource.Production;
                     MakeMoreResource(t, Resource.Production, .35f);
@@ -67,6 +71,7 @@ public class Blackboard : MonoBehaviour
     
     void MakeMoreResource(Tile tile, Resource resource, float chance)
     {
+        //Recursive function to make resources appear in clumps
         if (tile.pos.x < 63 && tileMatrix[tile.pos.x + 1, tile.pos.y].resource == Resource.None && Random.value < chance)
         {
             tileMatrix[tile.pos.x + 1, tile.pos.y].resource = resource;

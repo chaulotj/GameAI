@@ -17,6 +17,7 @@ public class ControlShell : MonoBehaviour
         autorun = false;
         bb = GetComponent<Blackboard>();
         canvas = GameObject.Find("Canvas").transform;
+        //First I assign starting tiles for all tiles
         for (int c = 0; c < bb.factionCount; c++)
         {
             while (true)
@@ -34,6 +35,7 @@ public class ControlShell : MonoBehaviour
 
     void Update()
     {
+        //Pausing
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             paused = !paused;
@@ -41,13 +43,16 @@ public class ControlShell : MonoBehaviour
             {
                 canvas.GetChild(0).gameObject.SetActive(false);
                 canvas.GetChild(1).gameObject.SetActive(true);
+                canvas.GetChild(2).gameObject.SetActive(false);
             }
             else
             {
                 canvas.GetChild(0).gameObject.SetActive(true);
                 canvas.GetChild(1).gameObject.SetActive(false);
+                canvas.GetChild(2).gameObject.SetActive(true);
             }
         }
+        //Autorunning
         if (!paused)
         {
             if (autorun)
@@ -67,9 +72,11 @@ public class ControlShell : MonoBehaviour
     {
             foreach (KnowledgeSource k in bb.factions)
             {
+            //I increment all resources
                 k.IncrementResources();
                 foreach (KeyValuePair<int, int> faction in k.factionsAtWar)
                 {
+                    //All factions losing by enough offer surrender for money
                     if (faction.Value < -k.tilesOwned / 4.0f && k.money + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
                     {
                         k.money += faction.Value;
@@ -77,6 +84,7 @@ public class ControlShell : MonoBehaviour
                         k.factionsAtWar.Remove(faction.Key);
                     }
                 }
+                //Sort the priority tiles of all knowledge sources
                 k.ChoosePriorityTiles();
             }
             int totalDone = 0;
@@ -95,6 +103,7 @@ public class ControlShell : MonoBehaviour
             {
                 if (!done[k.id] && k.priorityTiles.Count > 0)
                 {
+                    //Each faction's expansion
                     int loops = 0;
                     while (true)
                     {
@@ -103,27 +112,29 @@ public class ControlShell : MonoBehaviour
                         int moneyCost = 0;
                         int productionCost = 0;
                         int foodCost = 0;
+                        //If they're trying to capture the tile, adds to production/money cost
                         if (tile.owner != -1)
                         {
                             productionCost = (bb.factions[tile.owner].productionPerTurn / 4) + 2;
                             moneyCost = (bb.factions[tile.owner].moneyPerTurn / 4) + 2;
                         }
-                        if (tile.land)
+                        if (tile.land) //Cost for land tile
                         {
                             foodCost += 2;
                         }
-                        else
+                        else //Cost for sea tile
                         {
                             foodCost++;
                             productionCost++;
                         }
-                        if (tile.resource != Resource.None)
+                        if (tile.resource != Resource.None) //Cost to take a resource tile
                         {
                             productionCost++;
                         }
                         indexes[k.id]++;
                         if (moneyCost < k.money && productionCost < k.production && foodCost < k.food)
                         {
+                            //If they can afford the tile, they take it
                             k.money -= moneyCost;
                             k.production -= productionCost;
                             k.food -= foodCost;
@@ -141,6 +152,7 @@ public class ControlShell : MonoBehaviour
                         }
                         else if (indexes[k.id] >= k.priorityTiles.Count)
                         {
+                            //If their priorityTiles list is done
                             done[k.id] = true;
                             totalDone++;
                             break;

@@ -19,6 +19,7 @@ public class Tile : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //Just choosing colors
         if(resource == Resource.Food)
         {
             GetComponent<MeshRenderer>().material.color = Color.green;

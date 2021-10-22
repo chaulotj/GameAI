@@ -23,15 +23,16 @@ public class KnowledgeSource
     public Dictionary<Tile, bool> stillOwned;
     private Blackboard bb;
     private Color color;
-    public Resource[] resourcePriorities;
-    public float warChance; //between 0 and 1
-    public MovementType preferredMovement;
+    public Resource[] resourcePriorities; //0: first priority, 1: second priority, 2: third priority
+    public float warChance; //between 0 and 1; how likely this faction is to go to war
+    public MovementType preferredMovement; //Land or sea?
     public Dictionary<int, int> factionsAtWar; //owner, then warscore
     public List<Tile> priorityTiles;
     public int tilesOwned;
 
     public void IncrementResources()
     {
+        //Called each turn
         food += foodPerTurn;
         money += moneyPerTurn;
         production += productionPerTurn;
@@ -39,6 +40,7 @@ public class KnowledgeSource
 
     public void TakeTile(Tile tile)
     {
+        //All the steps needed to take a particular tile
         if(tile.owner == -1)
         {
             Blackboard.totalTilesOwned++;
@@ -46,6 +48,7 @@ public class KnowledgeSource
         tile.owner = id;
         tilesOwned++;
         ownedTiles.Add(tile, 1);
+        //Adding the proper resource
         switch (tile.resource)
         {
             case Resource.Food:
@@ -62,6 +65,7 @@ public class KnowledgeSource
         }
         tile.transform.GetChild(0).gameObject.SetActive(true);
         tile.transform.GetChild(0).GetComponent<MeshRenderer>().material.color = color;
+        //All the below is to keep track of which tiles can be expanded to in the future
         if (expandableTiles.ContainsKey(tile))
         {
             expandableTiles[tile]--;
@@ -122,9 +126,11 @@ public class KnowledgeSource
 
     public void LoseTile(Tile tile)
     {
+        //When this faction loses a tile
         ownedTiles.Remove(tile);
         stillOwned[tile] = false;
         tilesOwned--;
+        //Losing resources
         switch (tile.resource)
         {
             case Resource.Food:
@@ -139,6 +145,7 @@ public class KnowledgeSource
             default:
                 break;
         }
+        //Removing the propert tiles from expandableTiles
         if (tile.pos.x < 63)
         {
             CheckExpandRemoval(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]);
@@ -174,6 +181,7 @@ public class KnowledgeSource
 
     public void ChoosePriorityTiles()
     {
+        //Method that sorts tiles into higher or lower priority based on faction's preferences
         priorityTiles.Clear();
         List<Tile> warAndPreferred1 = new List<Tile>();
         List<Tile> warAndPreferred2 = new List<Tile>();
@@ -194,6 +202,7 @@ public class KnowledgeSource
         {
             willingToDeclareWar = true;
         }
+        //Slotting them into the different lists
         foreach (KeyValuePair<Tile, int> tile in expandableTiles)
         {
             if (!stillOwned.ContainsKey(tile.Key) || !stillOwned[tile.Key])
@@ -223,6 +232,7 @@ public class KnowledgeSource
                 }
             }
         }
+        //Putting the lists back together
         priorityTiles.AddRange(warAndPreferred1);
         priorityTiles.AddRange(warAndPreferred2);
         priorityTiles.AddRange(warAndPreferred3);
@@ -243,6 +253,7 @@ public class KnowledgeSource
 
     private bool AddPreferredResources(List<Tile> list1, List<Tile> list2, List<Tile> list3, Tile tile, List<Tile> noneList = null)
     {
+        //Helper method for the above method
         if (tile.resource == resourcePriorities[0])
         {
             list1.Add(tile);
@@ -269,6 +280,7 @@ public class KnowledgeSource
     // Start is called before the first frame update
     public void Init(Blackboard bbIn)
     {
+        //Inits the knowledge source with all of its preferences, and also changes what shows in the menu based on it
         bb = bbIn;
         tilesOwned = 0;
         factionsAtWar = new Dictionary<int, int>();
@@ -311,6 +323,7 @@ public class KnowledgeSource
         }
         warChance = Random.value;
         preferredMovement = (MovementType)Random.Range(0, 2);
+        //String with info about the factions
         string factionString = "";
         Text text = GameObject.Find("Canvas").transform.GetChild(1).GetChild(id+1).GetComponent<Text>();
         switch (id)

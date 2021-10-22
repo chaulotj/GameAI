@@ -78,50 +78,118 @@ public class KnowledgeSource
         {
             stillOwned.Add(tile, true);
         }
-        if (tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
+        int[] checkOrder = new int[4] { 0, 1, 2, 3 };
+        for(int c = 0; c < 4; c++)
         {
-            if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]))
+            int target = Random.Range(0, 4);
+            int tmp = checkOrder[c];
+            checkOrder[c] = checkOrder[target];
+            checkOrder[target] = tmp;
+        }
+        for(int c = 0; c < 4; c++)
+        {
+            switch (checkOrder[c])
             {
-                expandableTiles[bb.tileMatrix[tile.pos.x + 1, tile.pos.y]]++;
-            }
-            else
-            {
-                expandableTiles.Add(bb.tileMatrix[tile.pos.x + 1, tile.pos.y], 1);
+                case 0:
+                    if (tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
+                    {
+                        if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]))
+                        {
+                            expandableTiles[bb.tileMatrix[tile.pos.x + 1, tile.pos.y]]++;
+                        }
+                        else
+                        {
+                            expandableTiles.Add(bb.tileMatrix[tile.pos.x + 1, tile.pos.y], 1);
+                        }
+                    }
+                    break;
+                case 1:
+                    if (tile.pos.x > 0 && bb.tileMatrix[tile.pos.x - 1, tile.pos.y].owner != id)
+                    {
+                        if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x - 1, tile.pos.y]))
+                        {
+                            expandableTiles[bb.tileMatrix[tile.pos.x - 1, tile.pos.y]]++;
+                        }
+                        else
+                        {
+                            expandableTiles.Add(bb.tileMatrix[tile.pos.x - 1, tile.pos.y], 1);
+                        }
+                    }
+                    break;
+                case 2:
+                    if (tile.pos.y < 35 && bb.tileMatrix[tile.pos.x, tile.pos.y + 1].owner != id)
+                    {
+                        if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y + 1]))
+                        {
+                            expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y + 1]]++;
+                        }
+                        else
+                        {
+                            expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y + 1], 1);
+                        }
+                    }
+                    break;
+                case 3:
+                    if (tile.pos.y > 0 && bb.tileMatrix[tile.pos.x, tile.pos.y - 1].owner != id)
+                    {
+                        if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y - 1]))
+                        {
+                            expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y - 1]]++;
+                        }
+                        else
+                        {
+                            expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y - 1], 1);
+                        }
+                    }
+                    break;
+                default:
+                    break;
             }
         }
-        if (tile.pos.x > 0 && bb.tileMatrix[tile.pos.x - 1, tile.pos.y].owner != id)
-        {
-            if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x - 1, tile.pos.y]))
-            {
-                expandableTiles[bb.tileMatrix[tile.pos.x - 1, tile.pos.y]]++;
-            }
-            else
-            {
-                expandableTiles.Add(bb.tileMatrix[tile.pos.x - 1, tile.pos.y], 1);
-            }
-        }
-        if (tile.pos.y < 35 && bb.tileMatrix[tile.pos.x, tile.pos.y + 1].owner != id)
-        {
-            if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y + 1]))
-            {
-                expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y + 1]]++;
-            }
-            else
-            {
-                expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y + 1], 1);
-            }
-        }
-        if (tile.pos.y > 0 && bb.tileMatrix[tile.pos.x, tile.pos.y - 1].owner != id)
-        {
-            if(expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y - 1]))
-            {
-                expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y - 1]]++;
-            }
-            else
-            {
-                expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y - 1], 1);
-            }
-        }
+        //if (tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
+        //{
+        //    if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]))
+        //    {
+        //        expandableTiles[bb.tileMatrix[tile.pos.x + 1, tile.pos.y]]++;
+        //    }
+        //    else
+        //    {
+        //        expandableTiles.Add(bb.tileMatrix[tile.pos.x + 1, tile.pos.y], 1);
+        //    }
+        //}
+        //if (tile.pos.x > 0 && bb.tileMatrix[tile.pos.x - 1, tile.pos.y].owner != id)
+        //{
+        //    if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x - 1, tile.pos.y]))
+        //    {
+        //        expandableTiles[bb.tileMatrix[tile.pos.x - 1, tile.pos.y]]++;
+        //    }
+        //    else
+        //    {
+        //        expandableTiles.Add(bb.tileMatrix[tile.pos.x - 1, tile.pos.y], 1);
+        //    }
+        //}
+        //if (tile.pos.y < 35 && bb.tileMatrix[tile.pos.x, tile.pos.y + 1].owner != id)
+        //{
+        //    if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y + 1]))
+        //    {
+        //        expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y + 1]]++;
+        //    }
+        //    else
+        //    {
+        //        expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y + 1], 1);
+        //    }
+        //}
+        //if (tile.pos.y > 0 && bb.tileMatrix[tile.pos.x, tile.pos.y - 1].owner != id)
+        //{
+        //    if(expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x, tile.pos.y - 1]))
+        //    {
+        //        expandableTiles[bb.tileMatrix[tile.pos.x, tile.pos.y - 1]]++;
+        //    }
+        //    else
+        //    {
+        //        expandableTiles.Add(bb.tileMatrix[tile.pos.x, tile.pos.y - 1], 1);
+        //    }
+        //}
     }
 
     public void LoseTile(Tile tile)

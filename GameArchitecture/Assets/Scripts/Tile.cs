@@ -14,7 +14,7 @@ public class Tile : MonoBehaviour
 {
     public bool land; //If not land, then water
     public Resource resource; //Most will be none
-    public int owner; //0 is no one
+    public int owner; //-1 is no one
     public Vector2Int pos;
     // Start is called before the first frame update
     void Start()

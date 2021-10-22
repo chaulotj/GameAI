@@ -9,7 +9,7 @@ public class Blackboard : MonoBehaviour
     public List<KnowledgeSource> factions;
     public int factionCount = 6;
     public List<Tile> landTileList;
-    public static int totalTilesOwned; //Once this reaches 2304, it's gg
+    public static int totalTilesOwned;
     // Start is called before the first frame update
     void Awake()
     {
@@ -42,6 +42,7 @@ public class Blackboard : MonoBehaviour
         }
         foreach (Tile t in tileList)
         {
+            t.owner = -1;
             if (t.resource == Resource.None)
             {
                 float f = Random.value;

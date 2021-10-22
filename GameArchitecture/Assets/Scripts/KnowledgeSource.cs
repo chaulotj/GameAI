@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum MovementType
 {
@@ -37,7 +38,7 @@ public class KnowledgeSource
 
     public void TakeTile(Tile tile)
     {
-        if(tile.owner == 0)
+        if(tile.owner == -1)
         {
             Blackboard.totalTilesOwned++;
         }
@@ -64,7 +65,7 @@ public class KnowledgeSource
         {
             expandableTiles.Remove(tile);
         }
-        if(tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
+        if (tile.pos.x < 63 && bb.tileMatrix[tile.pos.x + 1, tile.pos.y].owner != id)
         {
             if (expandableTiles.ContainsKey(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]))
             {
@@ -128,10 +129,22 @@ public class KnowledgeSource
             default:
                 break;
         }
-        CheckExpandRemoval(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]);
-        CheckExpandRemoval(bb.tileMatrix[tile.pos.x - 1, tile.pos.y]);
-        CheckExpandRemoval(bb.tileMatrix[tile.pos.x, tile.pos.y + 1]);
-        CheckExpandRemoval(bb.tileMatrix[tile.pos.x, tile.pos.y - 1]);
+        if (tile.pos.x < 63)
+        {
+            CheckExpandRemoval(bb.tileMatrix[tile.pos.x + 1, tile.pos.y]);
+        }
+        if (tile.pos.x > 0)
+        {
+            CheckExpandRemoval(bb.tileMatrix[tile.pos.x - 1, tile.pos.y]);
+        }
+        if (tile.pos.y < 35)
+        {
+            CheckExpandRemoval(bb.tileMatrix[tile.pos.x, tile.pos.y + 1]);
+        }
+        if (tile.pos.y > 0)
+        {
+            CheckExpandRemoval(bb.tileMatrix[tile.pos.x, tile.pos.y - 1]);
+        }
     }
 
     private void CheckExpandRemoval(Tile tile)
@@ -167,7 +180,7 @@ public class KnowledgeSource
         List<Tile> otherMovement = new List<Tile>();
         List<Tile> lastResort = new List<Tile>();
         bool willingToDeclareWar = false;
-        if (Random.value < warChance)
+        if (Random.value < warChance || Blackboard.totalTilesOwned >= 2304)
         {
             willingToDeclareWar = true;
         }
@@ -177,11 +190,11 @@ public class KnowledgeSource
             {
                 AddPreferredResources(warAndPreferred1, warAndPreferred2, warAndPreferred3, tile.Key, war);
             }
-            else if(tile.Key.owner != 0 && willingToDeclareWar)
+            else if(tile.Key.owner != -1 && willingToDeclareWar)
             {
                 AddPreferredResources(newConquestPreferred1, newConquestPreferred2, newConquestPreferred3, tile.Key, newConquest);
             }
-            else if(tile.Key.owner == 0 && !AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
+            else if(tile.Key.owner == -1 && !AddPreferredResources(preferred1, preferred2, preferred3, tile.Key))
             {
                 if((preferredMovement == MovementType.Land && tile.Key.land) || (preferredMovement == MovementType.Sea && !tile.Key.land))
                 {
@@ -211,8 +224,8 @@ public class KnowledgeSource
         priorityTiles.AddRange(betterMovement);
         priorityTiles.AddRange(otherMovement);
         priorityTiles.AddRange(lastResort);
-        Debug.Log(priorityTiles.Count);
-        Debug.Log(expandableTiles.Count);
+        //Debug.Log(priorityTiles.Count);
+        //Debug.Log(expandableTiles.Count);
     }
 
     private bool AddPreferredResources(List<Tile> list1, List<Tile> list2, List<Tile> list3, Tile tile, List<Tile> noneList = null)
@@ -284,28 +297,66 @@ public class KnowledgeSource
         }
         warChance = Random.value;
         preferredMovement = (MovementType)Random.Range(0, 2);
+        string factionString = "";
+        Text text = GameObject.Find("Canvas").transform.GetChild(1).GetChild(id+1).GetComponent<Text>();
         switch (id)
         {
             case 0:
                 color = Color.white;
+                factionString += "White";
                 break;
             case 1:
                 color = Color.black;
+                factionString += "Black";
                 break;
             case 2:
                 color = Color.gray;
+                factionString += "Gray";
                 break;
             case 3:
                 color = new Color(1.0f, .647f, 0.0f);
+                factionString += "Orange";
                 break;
             case 4:
                 color = new Color(.5f, 0.0f, .5f);
+                factionString += "Purple";
                 break;
             case 5:
                 color = Color.cyan;
+                factionString += "Cyan";
                 break;
             default:
                 break;
         }
+        factionString += " faction, War Chance: " + (int)(warChance * 100.0f) + "%, Preferred Movement: ";
+        if(preferredMovement == MovementType.Land)
+        {
+            factionString += "Land";
+        }
+        else
+        {
+            factionString += "Sea";
+        }
+        factionString += "\nPreferred Resources: ";
+        for(int c = 0; c < 3; c++)
+        {
+            if(resourcePriorities[c] == Resource.Food)
+            {
+                factionString += "Food";
+            }
+            else if (resourcePriorities[c] == Resource.Money)
+            {
+                factionString += "Money";
+            }
+            else
+            {
+                factionString += "Production";
+            }
+            if(c != 2)
+            {
+                factionString += ", ";
+            }
+        }
+        text.text = factionString;
     }
 }

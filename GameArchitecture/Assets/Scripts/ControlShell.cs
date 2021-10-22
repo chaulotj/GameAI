@@ -77,9 +77,10 @@ public class ControlShell : MonoBehaviour
                 foreach (KeyValuePair<int, int> faction in k.factionsAtWar)
                 {
                     //All factions losing by enough offer surrender for money
-                    if (faction.Value < -k.tilesOwned / 4.0f && k.money + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
+                    if (faction.Value < -k.tilesOwned / 4.0f && (2*k.money) + faction.Value > 0 && Random.value < bb.factions[faction.Key].warChance)
                     {
-                        k.money += faction.Value;
+                        k.money -= faction.Value/2;
+                        bb.factions[faction.Key].money += faction.Value / 2;
                         bb.factions[faction.Key].factionsAtWar.Remove(k.id);
                         k.factionsAtWar.Remove(faction.Key);
                     }
